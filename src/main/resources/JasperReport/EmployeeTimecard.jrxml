@@ -1,0 +1,263 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="EmployeeTimecard" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="debd7485-771b-4761-88f2-f60200dd8125">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="AOOP"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<style name="CompanyName" forecolor="#03135F" fontName="SansSerif" fontSize="24.0" bold="true" italic="true"/>
+	<style name="CompanyInfo" forecolor="#000000" fontName="SansSerif" fontSize="7.0" bold="true"/>
+	<style name="ReportTitle" forecolor="#03135F" fontName="SansSerif" fontSize="13.0" bold="true" underline="true"/>
+	<style name="InfoLabel" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.0" bold="true"/>
+	<style name="InfoValue" forecolor="#000000" fontName="SansSerif" fontSize="7.0"/>
+	<style name="ColumnHeader" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.0" bold="true"/>
+	<style name="DetailCell" forecolor="#000000" fontName="SansSerif" fontSize="7.0">
+		<conditionalStyle mode="Opaque" backcolor="#F2F2F2">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}.intValue() % 2 == 0]]></conditionExpression>
+		</conditionalStyle>
+		<conditionalStyle mode="Opaque" backcolor="#FFFFFF">
+			<conditionExpression><![CDATA[$V{REPORT_COUNT}.intValue() % 2 != 0]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<style name="ValidityBadge" forecolor="#FFFFFF" fontName="SansSerif" fontSize="7.0" bold="true">
+		<conditionalStyle mode="Opaque" backcolor="#00BF63">
+			<conditionExpression><![CDATA["Valid".equals($F{validity})]]></conditionExpression>
+		</conditionalStyle>
+		<conditionalStyle mode="Opaque" backcolor="#FF5757">
+			<conditionExpression><![CDATA["Invalid".equals($F{validity})]]></conditionExpression>
+		</conditionalStyle>
+	</style>
+	<parameter name="LOGO" class="java.io.InputStream">
+		<defaultValueExpression><![CDATA[Thread.currentThread().getContextClassLoader().getResourceAsStream("JasperReport/MotorPH-icon.png")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="EMPLOYEE_ID" class="java.lang.Integer"/>
+	<parameter name="MONTH" class="java.lang.Integer"/>
+	<parameter name="YEAR" class="java.lang.Integer"/>
+	<query language="SQL"><![CDATA[SELECT
+    a.employee_id,
+    CONCAT(e.last_name, ', ', e.first_name) AS employee_name,
+
+    DATE_FORMAT(STR_TO_DATE(CONCAT($P{YEAR}, '-', $P{MONTH}, '-01'), '%Y-%m-%d'), '%M %Y') AS payroll_date_text,
+    CASE
+        WHEN DAY(a.attendance_date) BETWEEN 1 AND 15 THEN '1st Cutoff'
+        ELSE '2nd Cutoff'
+    END AS payroll_period,
+
+    DATE_FORMAT(a.attendance_date, '%m/%d/%Y') AS attendance_date_text,
+
+    CASE
+        WHEN LOWER(COALESCE(ats.status_name, '')) LIKE '%holiday%' THEN 'Holiday'
+        WHEN a.time_in IS NOT NULL
+             AND a.time_out IS NOT NULL
+             AND ROUND(TIME_TO_SEC(TIMEDIFF(a.time_out, a.time_in)) / 3600, 2) > 8 THEN 'Overtime'
+        ELSE 'Regular'
+    END AS attendance_type,
+
+    CASE
+        WHEN a.time_in IS NULL THEN ''
+        ELSE TIME_FORMAT(a.time_in, '%h:%i %p')
+    END AS time_in_text,
+
+    CASE
+        WHEN a.time_out IS NULL THEN ''
+        ELSE TIME_FORMAT(a.time_out, '%h:%i %p')
+    END AS time_out_text,
+
+    CASE
+        WHEN a.time_in IS NOT NULL AND a.time_out IS NOT NULL
+        THEN CAST(ROUND(TIME_TO_SEC(TIMEDIFF(a.time_out, a.time_in)) / 3600, 2) AS CHAR)
+        ELSE '0'
+    END AS total_hours_worked,
+
+    CASE
+        WHEN a.time_in IS NULL OR a.time_out IS NULL THEN 'Invalid'
+        ELSE 'Valid'
+    END AS validity
+
+FROM attendance a
+LEFT JOIN employee e
+    ON a.employee_id = e.employee_id
+LEFT JOIN attendance_status ats
+    ON a.attendance_status_id = ats.attendance_status_id
+WHERE a.employee_id = $P{EMPLOYEE_ID}
+    AND MONTH(a.attendance_date) = $P{MONTH}
+    AND YEAR(a.attendance_date) = $P{YEAR}
+ORDER BY
+    a.employee_id,
+    a.attendance_date]]></query>
+	<field name="employee_id" class="java.lang.Integer"/>
+	<field name="employee_name" class="java.lang.String"/>
+	<field name="payroll_date_text" class="java.lang.String"/>
+	<field name="payroll_period" class="java.lang.String"/>
+	<field name="attendance_date_text" class="java.lang.String"/>
+	<field name="attendance_type" class="java.lang.String"/>
+	<field name="time_in_text" class="java.lang.String"/>
+	<field name="time_out_text" class="java.lang.String"/>
+	<field name="total_hours_worked" class="java.lang.String"/>
+	<field name="validity" class="java.lang.String"/>
+	<background splitType="Stretch"/>
+	<title height="120" splitType="Stretch">
+		<element kind="image" uuid="0c88b846-14aa-441d-89b8-195eed9ea49d" x="240" y="-7" width="100" height="100" scaleImage="RetainShape" onErrorType="Blank">
+			<expression><![CDATA[$P{LOGO}]]></expression>
+		</element>
+		<element kind="staticText" uuid="d3485558-dd6a-47d8-a611-974f1b5a9ed0" x="350" y="0" width="220" height="34" hTextAlign="Left" vTextAlign="Middle" style="CompanyName">
+			<text><![CDATA[MotorPH]]></text>
+		</element>
+		<element kind="staticText" uuid="b8d1924c-edc1-4cff-bf4e-6050282d502c" x="350" y="38" width="380" height="12" hTextAlign="Left" vTextAlign="Middle" style="CompanyInfo">
+			<text><![CDATA[7 Jupiter Avenue cor. F. Sandoval Jr., Bagong Nayon, Quezon City]]></text>
+		</element>
+		<element kind="staticText" uuid="aa28222f-b7a6-425c-9d8e-7994e0f7da8a" x="350" y="52" width="380" height="12" hTextAlign="Left" vTextAlign="Middle" style="CompanyInfo">
+			<text><![CDATA[Phone: (028) 911-5071 / (028) 911-5072 / (028) 911-5073]]></text>
+		</element>
+		<element kind="staticText" uuid="eca142fa-87ce-4c15-b151-ad57e2f2427a" x="350" y="66" width="380" height="12" hTextAlign="Left" vTextAlign="Middle" style="CompanyInfo">
+			<text><![CDATA[Email: corporate@motorph.com]]></text>
+		</element>
+		<element kind="staticText" uuid="30e67f1f-eadf-493a-9a77-55334868e25e" x="0" y="94" width="802" height="22" hTextAlign="Center" vTextAlign="Middle" style="ReportTitle">
+			<text><![CDATA[EMPLOYEE TIMECARD]]></text>
+		</element>
+	</title>
+	<pageHeader height="50" splitType="Stretch">
+		<element kind="staticText" uuid="71853d6f-120f-4238-894a-70c1ec6f46f5" mode="Opaque" x="0" y="0" width="110" height="23" backcolor="#03135F" vTextAlign="Middle" style="InfoLabel">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[EMPLOYEE ID]]></text>
+			<box style="InfoLabel">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="b9ce3b2c-34b0-4d6b-bf56-837ab2a91703" x="110" y="0" width="190" height="23" blankWhenNull="true" vTextAlign="Middle" style="InfoValue">
+			<paragraph leftIndent="4"/>
+			<expression><![CDATA[$F{employee_id}]]></expression>
+			<box style="InfoValue">
+				<pen lineWidth="0.25" lineColor="#D0D0D0"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="188f96c0-4c04-463d-acbb-d9de0fda62da" mode="Opaque" x="300" y="0" width="160" height="23" backcolor="#03135F" vTextAlign="Middle" style="InfoLabel">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[PERIOD]]></text>
+			<box style="InfoLabel">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="41d3118c-d1c0-43cd-a252-4b1a46e9f037" x="460" y="0" width="342" height="23" blankWhenNull="true" vTextAlign="Middle" style="InfoValue">
+			<paragraph leftIndent="4"/>
+			<expression><![CDATA[$F{payroll_date_text}]]></expression>
+			<box style="InfoValue">
+				<pen lineWidth="0.25" lineColor="#D0D0D0"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="9c9d0ba7-4876-49ba-a213-dc620793d8e1" mode="Opaque" x="0" y="23" width="110" height="27" backcolor="#03135F" vTextAlign="Middle" style="InfoLabel">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[EMPLOYEE NAME]]></text>
+			<box style="InfoLabel">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="2c37223c-5452-4fff-91c8-08eec0758d8a" x="110" y="23" width="190" height="27" blankWhenNull="true" vTextAlign="Middle" style="InfoValue">
+			<paragraph leftIndent="4"/>
+			<expression><![CDATA[$F{employee_name}]]></expression>
+			<box style="InfoValue">
+				<pen lineWidth="0.25" lineColor="#D0D0D0"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="4bf8cc84-15bd-4ac4-bdb6-69cfc00b4d3b" mode="Opaque" x="300" y="23" width="160" height="27" backcolor="#03135F" vTextAlign="Middle" style="InfoLabel">
+			<paragraph leftIndent="4"/>
+			<text><![CDATA[PAYROLL PERIOD]]></text>
+			<box style="InfoLabel">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="textField" uuid="0ecf6426-84fe-4a3b-af80-5d1d0d1286a2" x="460" y="23" width="342" height="27" blankWhenNull="true" vTextAlign="Middle" style="InfoValue">
+			<paragraph leftIndent="4"/>
+			<expression><![CDATA[$F{payroll_period}]]></expression>
+			<box style="InfoValue">
+				<pen lineWidth="0.25" lineColor="#D0D0D0"/>
+			</box>
+		</element>
+	</pageHeader>
+	<columnHeader height="24" splitType="Stretch">
+		<element kind="staticText" uuid="6a0c6b59-9261-4fe9-8669-e1ba414799b5" mode="Opaque" x="0" y="0" width="130" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Date]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="92b9c2c8-9619-4cf7-8d80-cd5700048a6e" mode="Opaque" x="130" y="0" width="130" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Type]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="037669d1-4088-46ca-952b-561edb7a731a" mode="Opaque" x="260" y="0" width="125" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Time In]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="35ae96be-4304-4304-b91b-4081ce08488e" mode="Opaque" x="385" y="0" width="125" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Time Out]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="a2b55d0f-51bb-47cc-b42b-1c137ff710e5" mode="Opaque" x="510" y="0" width="170" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Total Hours Worked]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+		<element kind="staticText" uuid="00ae6db0-3b01-4ce1-b48f-f8545953a540" mode="Opaque" x="680" y="0" width="122" height="24" backcolor="#03135F" hTextAlign="Center" vTextAlign="Middle" style="ColumnHeader">
+			<text><![CDATA[Validity]]></text>
+			<box style="ColumnHeader">
+				<pen lineWidth="0.25" lineColor="#FFFFFF"/>
+			</box>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="20" splitType="Stretch">
+			<element kind="textField" uuid="32f5773e-233a-45aa-a284-a575ca23a708" x="0" y="0" width="130" height="20" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="DetailCell">
+				<expression><![CDATA[$F{attendance_date_text}]]></expression>
+				<box style="DetailCell">
+					<pen lineWidth="0.1" lineColor="#FFFFFF"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="06a364ef-4cb9-4544-9435-410cd7564532" x="130" y="0" width="130" height="20" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="DetailCell">
+				<expression><![CDATA[$F{attendance_type}]]></expression>
+				<box style="DetailCell">
+					<pen lineWidth="0.1" lineColor="#FFFFFF"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="6def1bdf-b949-4c5d-bf72-15d220c762f2" x="260" y="0" width="125" height="20" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="DetailCell">
+				<expression><![CDATA[$F{time_in_text}]]></expression>
+				<box style="DetailCell">
+					<pen lineWidth="0.1" lineColor="#FFFFFF"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="72edf31f-c8c9-4249-99a9-25926b1f3d1c" x="385" y="0" width="125" height="20" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="DetailCell">
+				<expression><![CDATA[$F{time_out_text}]]></expression>
+				<box style="DetailCell">
+					<pen lineWidth="0.1" lineColor="#FFFFFF"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="3a559ec7-4242-4ecd-9c42-e1daee348a03" x="510" y="0" width="170" height="20" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="DetailCell">
+				<expression><![CDATA[$F{total_hours_worked}]]></expression>
+				<box style="DetailCell">
+					<pen lineWidth="0.1" lineColor="#FFFFFF"/>
+				</box>
+			</element>
+			<element kind="textField" uuid="1876f670-7037-4977-98fb-c61faf6bce1d" x="708" y="3" width="66" height="14" blankWhenNull="true" hTextAlign="Center" vTextAlign="Middle" style="ValidityBadge">
+				<expression><![CDATA[$F{validity}]]></expression>
+			</element>
+		</band>
+	</detail>
+	<pageFooter height="18" splitType="Stretch">
+		<element kind="textField" uuid="f32bf832-f299-4f9e-a4c7-f9e38ee54b95" x="680" y="2" width="80" height="12" fontSize="7.0" hTextAlign="Right">
+			<expression><![CDATA["Page " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="490e76af-0d33-4010-865a-33461cf5e485" x="760" y="2" width="42" height="12" fontSize="7.0" evaluationTime="Report">
+			<expression><![CDATA[" of " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+</jasperReport>
